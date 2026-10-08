@@ -1,0 +1,29 @@
+# Pin exact model versions. Entries marked CONFIRM must be checked against the
+# provider's model list before the first API call.
+seed: 20261007
+cost_cap_usd: 25          # ask before any run estimated above this
+smoke_test_items: 10
+
+models:
+  - {name: claude, provider: anthropic, id: claude-sonnet-5-5}
+  - {name: openai, provider: openai,    id: CONFIRM}
+  - {name: google, provider: google,    id: CONFIRM}
+
+elicitation:
+  samples_per_item: 3
+  temperature: 0.7
+
+sample_sizes:
+  crisis_max_per_category: 30   # take all of violent_thoughts / risk_taking_behaviors
+  crisis_no_crisis_control: 40  # no_crisis items as control; duplicates dropped
+  counselbench_adv: 120   # all
+  deployment_baseline: 200
+
+data:
+  crisis_benchmark_dir: data/raw/crisis_benchmark
+  counselbench_adv_csv: data/raw/counselbench_adv/counselbench_adv.csv
+
+# Analysis labels
+labels:
+  counselbench_adv: authored counselling questions   # P(eval) only; not in rewrite pilot
+rewrite_pilot_sources: [crisis_benchmark]

@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- crisis-realism-gap ---
+data/raw/
+data/processed/
+outputs/
+*.parquet
+*.duckdb
+.env.*
+!.env.example
