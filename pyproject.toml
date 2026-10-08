@@ -3,6 +3,9 @@ name = "crisis-realism-gap"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "anthropic>=1.12.0",
+    "google-genai>=2.29.0",
+    "openai>=3.26.0",
     "pandas>=3.0.6",
     "pyarrow>=25.0.1",
     "python-dotenv>=1.2.4",

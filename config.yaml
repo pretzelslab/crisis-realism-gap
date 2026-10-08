@@ -4,10 +4,21 @@ seed: 20261007
 cost_cap_usd: 25          # ask before any run estimated above this
 smoke_test_items: 10
 
+# Prices are USD per million tokens from third-party trackers (UNVERIFIED; check vendor pages).
+# Gemini 3.8 Flash price reportedly doubles on 2027-01-01.
 models:
-  - {name: claude, provider: anthropic, id: claude-sonnet-5-5}
-  - {name: openai, provider: openai,    id: CONFIRM}
-  - {name: google, provider: google,    id: CONFIRM}
+  - {name: sonnet, provider: anthropic, id: claude-sonnet-5-5, price_in: 2.0,  price_out: 10.0, temperature: null}
+  - {name: opus,   provider: anthropic, id: claude-opus-5-5,   price_in: 4.0,  price_out: 20.0, temperature: null}
+  - {name: gemini, provider: google,    id: gemini-3.8-flash,  price_in: 0.75, price_out: 3.75, temperature: 0.7, thinking_level: LOW}
+  - {name: gpt,    provider: openai,    id: gpt-6.1-sol,       price_in: 2.0,  price_out: 10.0, temperature: null, reasoning_effort: low}
+
+# Deviations from PHASE1_SPEC (report in memo):
+# - claude-sonnet-5-5 and claude-opus-5-5 reject `temperature` (API 400: deprecated for this model), so
+#   they also run at default sampling. Only Gemini uses temperature 0.7. Samples differ only by model sampling.
+# - gpt-6.1-sol has no temperature parameter (3rd-party reports; confirmed by smoke test). Its 3 samples
+#   vary only through the model's own sampling, not temperature 0.7.
+# - gpt-6.1-sol is an alias with no dated snapshot; the returned `model` field is logged per call.
+# - Sol runs with reasoning_effort=low; Gemini 3.8 Flash with thinking_level=LOW (MINIMAL is rejected by the API; LOW showed 0 thought tokens on a trivial prompt).
 
 elicitation:
   samples_per_item: 3
