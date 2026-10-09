@@ -36,6 +36,27 @@ Positive group is the first named; AUC 0.5 = indistinguishable.
 | crisis vs wildchat (163/200) | 0.913 [0.879, 0.946] | 0.965 [0.945, 0.982] | 0.947 [0.926, 0.966] | 0.936 [0.906, 0.962] |
 | no_crisis vs wildchat (40/200) | 0.891 [0.827, 0.944] | 0.918 [0.865, 0.961] | 0.884 [0.830, 0.929] | 0.840 [0.759, 0.908] |
 
+## Empty reasons (model x source)
+
+`raw_empty` = model's reason had 0 words when parsed (before storage); `stored_empty` = `reason` column empty. WildChat reasons are blanked on purpose (real users), so stored_empty there is by design, not a bug.
+
+| model | source | n | raw_empty | stored_empty | unparsed |
+|---|---|---|---|---|---|
+| gemini | counselbench_adv | 360 | 0 | 0 | 0 |
+| gemini | crisis_benchmark | 609 | 0 | 0 | 0 |
+| gemini | wildchat_filtered | 600 | 0 | 600 | 0 |
+| gpt | counselbench_adv | 360 | 0 | 0 | 0 |
+| gpt | crisis_benchmark | 609 | 0 | 0 | 0 |
+| gpt | wildchat_filtered | 600 | 0 | 600 | 0 |
+| opus | counselbench_adv | 360 | 0 | 0 | 0 |
+| opus | crisis_benchmark | 609 | 1 | 1 | 1 |
+| opus | wildchat_filtered | 600 | 0 | 600 | 0 |
+| sonnet | counselbench_adv | 360 | 0 | 0 | 0 |
+| sonnet | crisis_benchmark | 609 | 0 | 0 | 0 |
+| sonnet | wildchat_filtered | 600 | 0 | 600 | 0 |
+
+Finding: 0 genuine omissions. Every parsed call carried a non-empty reason. The only raw-empty call is the opus refusal on test_001346 s2 (no output, so no p_eval either): model behaviour, logged, no parser change. The raw response is not stored (hash only), so a missing-vs-empty `reason` key cannot be told apart, but none occurred.
+
 ## Item-text check
 
 calls.jsonl has no item-text column; it stores prompt/response hashes and the model's free-text `reason` (3875 non-empty, WildChat reasons blanked). Reasons sharing an 8-word run with item text: 0 (0 CounselBench). No verbatim item text found; calls.jsonl is still gitignored.

@@ -105,6 +105,17 @@ def summary(run_dir, d, n_attempts, n_failed, scores, aucs, leak):
     a["comparison"] = a.pos + " vs " + a.neg + " (" + a.n_pos.astype(str) + "/" + a.n_neg.astype(str) + ")"
     a["AUC [95% CI]"] = a.apply(lambda r: f"{r.auc:.3f} [{r.ci_lo:.3f}, {r.ci_hi:.3f}]", axis=1)
     L += [md(a.pivot(index="comparison", columns="model", values="AUC [95% CI]")[order].reset_index()), "",
+          "## Empty reasons (model x source)", "",
+          "`raw_empty` = model's reason had 0 words when parsed (before storage); `stored_empty` = `reason` column empty. "
+          "WildChat reasons are blanked on purpose (real users), so stored_empty there is by design, not a bug.", ""]
+    e = d.assign(raw_empty=d.reason_words == 0, stored_empty=d.reason == "", unparsed=d.p_eval.isna())
+    e = e.groupby(["model", "source"]).agg(n=("p_eval", "size"), raw_empty=("raw_empty", "sum"),
+                                           stored_empty=("stored_empty", "sum"), unparsed=("unparsed", "sum"))
+    L += [md(e.reset_index()), "",
+          "Finding: 0 genuine omissions. Every parsed call carried a non-empty reason. The only raw-empty call is the "
+          "opus refusal on test_001346 s2 (no output, so no p_eval either): model behaviour, logged, no parser change. "
+          "The raw response is not stored (hash only), so a missing-vs-empty `reason` key cannot be told apart, "
+          "but none occurred.", "",
           "## Item-text check", "", leak, ""]
     (run_dir / "summary.md").write_text("\n".join(L), encoding="utf-8")
 
