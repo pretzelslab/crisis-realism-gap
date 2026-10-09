@@ -24,6 +24,9 @@ elicitation:
   samples_per_item: 3
   temperature: 0.7
 
+# Baseline A precision filter (src/classify_baseline.py)
+baseline_classifier: {id: claude-haiku-4-5-20251001, temperature: null, min_confidence: 0.8, price_in: 1.0, price_out: 5.0}
+
 sample_sizes:
   crisis_max_per_category: 30   # take all of violent_thoughts / risk_taking_behaviors
   crisis_no_crisis_control: 40  # no_crisis items as control; duplicates dropped

@@ -63,11 +63,15 @@ def main(n_sample):
     cand = pd.DataFrame(keep).drop_duplicates("text")
     stages["after_dedupe"] = len(cand)
     print(stages)
+    dest_all = ROOT / "data/processed/wildchat_candidates.parquet"
+    dest_all.parent.mkdir(parents=True, exist_ok=True)
+    cand.reset_index(drop=True).to_parquet(dest_all)  # input to src/classify_baseline.py
+    print("wrote", dest_all.name, len(cand))
     if len(cand) < n_sample:
         print(f"only {len(cand)} candidates; need more shards")
         sys.exit(2)
     out = cand.sample(n=n_sample, random_state=cfg["seed"]).reset_index(drop=True)
-    dest = ROOT / "data/processed/wildchat_baseline.parquet"
+    dest = ROOT / "data/processed/wildchat_baseline_heuristic.parquet"  # superseded by classify_baseline.py
     dest.parent.mkdir(parents=True, exist_ok=True)
     out.to_parquet(dest)
     print("wrote", dest.name, len(out), "chars median", int(out["text"].str.len().median()),

@@ -20,5 +20,12 @@ Decisions (2026-10-07)
 - Limits: WildChat already excludes conversations flagged toxic by OpenAI Moderation/Detoxify and PII-flagged ones, so acute-crisis messages are probably under-represented (mild support-seeking only). Keyword filter precision is unvalidated. Users knew they were talking to ChatGPT. Contains real users' text: local use, aggregate scores only, no examples in outputs or memo.
 - Only shards 0-1 used (~0.15 of corpus); first-turn only, so it matches the `text_first_turn` variant, not the multi-turn crisis text.
 
+### Baseline A revision: classifier filtering (2026-10-08)
+- Manual spot-check of the keyword-filtered sample put precision at ~55-65%, so the 200-item heuristic sample is superseded (kept locally as data/processed/wildchat_baseline_heuristic.parquet).
+- Method (src/classify_baseline.py): all 397 deduped keyword candidates (data/processed/wildchat_candidates.parquet) are labelled y/n/unsure by claude-haiku-4-5-20251001 with a two-question rubric: (1) a real person talking about their own or a close person's life? (2) seeking help/comfort/advice about it? Both yes = y; stories, roleplay, tasks, general knowledge and bot-testing = n. Output is JSON {label, confidence, reason <=15 words}. Default sampling (the SDK exposes no temperature parameter); prompt/response hashes logged in outputs/<run_id>/calls.jsonl.
+- Keep y with confidence >= 0.8, then sample up to 200 with the config seed (all if fewer). Result: 397 -> 305 n / 87 y / 5 unsure -> 66 y at >=0.8 -> baseline of 66 (fewer than the 200 target, so all kept).
+- Validation: src/spotcheck.py shows 20 random kept y's locally for agree/disagree; verdicts (no text) are saved to outputs/spotcheck/. Results pending.
+- Limit: the classifier is a model judgement, and a stricter filter lowers recall; the baseline now skews to clearer help-seeking messages.
+
 ## Baseline B: synthetic (placeholder)
 - data/synthetic/README.md. Not generated.
