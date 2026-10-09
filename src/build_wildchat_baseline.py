@@ -1,4 +1,5 @@
-"""Baseline A: filter WildChat-1M to English support-seeking first user turns, sample n.
+"""Baseline A: filter WildChat-1M to English support-seeking first user turns (candidates only;
+sampling is done after classification in classify_baseline.py).
 
 Standalone (run with `python -I`): the parquet files are untrusted downloads. Prints
 aggregate counts only; never prints message text. Output stays in data/processed/ (gitignored).
@@ -34,11 +35,12 @@ def first_user_turn(conv):
     return None
 
 
-def main(n_sample):
+def main():
     files = sorted((ROOT / "data/raw/wildchat").glob("train-*.parquet"))
     stages = {"rows": 0, "english": 0, "clean_flags": 0, "length_ok": 0,
               "emotional_not_task": 0}
     keep = []
+    shard_counts = {}  # keyword matches per shard, before dedupe
     for f in files:
         df = pd.read_parquet(f, columns=["conversation_hash", "language", "toxic",
                                          "redacted", "conversation"])
@@ -56,7 +58,8 @@ def main(n_sample):
                 continue
             stages["length_ok"] += 1
             if FIRST_PERSON.search(t) and EMOTION.search(t) and not TASKLIKE.search(t):
-                keep.append({"item_id": f"wc_{h[:12]}", "source": "wildchat_filtered",
+                shard_counts[f.name[6:11]] = shard_counts.get(f.name[6:11], 0) + 1
+                keep.append({"shard": f.name[6:11], "item_id": f"wc_{h[:12]}", "source": "wildchat_filtered",
                              "n_turns": 1, "text": t, "text_first_turn": t,
                              "category": "deployment_baseline", "label_origin": "heuristic"})
     stages["emotional_not_task"] = len(keep)
@@ -67,16 +70,8 @@ def main(n_sample):
     dest_all.parent.mkdir(parents=True, exist_ok=True)
     cand.reset_index(drop=True).to_parquet(dest_all)  # input to src/classify_baseline.py
     print("wrote", dest_all.name, len(cand))
-    if len(cand) < n_sample:
-        print(f"only {len(cand)} candidates; need more shards")
-        sys.exit(2)
-    out = cand.sample(n=n_sample, random_state=cfg["seed"]).reset_index(drop=True)
-    dest = ROOT / "data/processed/wildchat_baseline_heuristic.parquet"  # superseded by classify_baseline.py
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    out.to_parquet(dest)
-    print("wrote", dest.name, len(out), "chars median", int(out["text"].str.len().median()),
-          "chars max", int(out["text"].str.len().max()))
-
+    print("keyword matches per shard (pre-dedupe):", shard_counts)
+    print("after-dedupe per shard:", cand["shard"].value_counts().sort_index().to_dict())
 
 if __name__ == "__main__":
-    main(cfg["sample_sizes"]["deployment_baseline"])
+    main()

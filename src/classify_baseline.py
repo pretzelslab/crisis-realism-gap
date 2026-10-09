@@ -52,6 +52,10 @@ def main():
     cfg = load_config()
     clf = cfg["baseline_classifier"]
     cand = pd.read_parquet(ROOT / "data/processed/wildchat_candidates.parquet")
+    lab_path = ROOT / "data/processed/wildchat_labels.parquet"
+    prev = pd.read_parquet(lab_path) if lab_path.exists() else pd.DataFrame(
+        columns=["item_id", "label", "confidence", "reason"])
+    todo = cand[~cand["item_id"].isin(prev["item_id"])]  # incremental: skip already-labelled items
     run_id = "baselineA_" + datetime.now().strftime("%Y%m%d_%H%M%S")
     out_dir = ROOT / "outputs" / run_id
     out_dir.mkdir(parents=True)
@@ -59,7 +63,7 @@ def main():
 
     rows, tin, tout = [], 0, 0
     with open(out_dir / "calls.jsonl", "w") as log:
-        for it in cand.itertuples():
+        for it in todo.itertuples():
             prompt = PROMPT.format(text=it.text)
             r = client.messages.create(model=clf["id"], max_tokens=MAX_OUT,  # no temperature: SDK rejects it
                                        messages=[{"role": "user", "content": prompt}])
@@ -71,8 +75,8 @@ def main():
                                   "model": r.model, "label": label, "confidence": conf}) + "\n")
             rows.append({"item_id": it.item_id, "label": label, "confidence": conf, "reason": reason})
 
-    labels = pd.DataFrame(rows)
-    labels.to_parquet(ROOT / "data/processed/wildchat_labels.parquet")
+    labels = pd.concat([prev, pd.DataFrame(rows)], ignore_index=True)
+    labels.to_parquet(lab_path)
     merged = cand.merge(labels, on="item_id", validate="1:1")
     keep = merged[(merged["label"] == "y") & (merged["confidence"] >= clf["min_confidence"])]
     n = min(len(keep), cfg["sample_sizes"]["deployment_baseline"])
@@ -81,6 +85,10 @@ def main():
     out.to_parquet(ROOT / "data/processed/wildchat_baseline.parquet")
 
     cost = tin / 1e6 * clf["price_in"] + tout / 1e6 * clf["price_out"]
+    per_shard = merged.assign(new=merged["item_id"].isin([r["item_id"] for r in rows])).groupby("shard").apply(
+        lambda g: {"candidates": len(g), "y": int((g["label"] == "y").sum()),
+                   "y>=thr": int(((g["label"] == "y") & (g["confidence"] >= clf["min_confidence"])).sum())},
+        include_groups=False).to_dict()
     counts = labels["label"].fillna("unparsed").value_counts().to_dict()
     summary = (f"# {run_id}\n\nModel: {clf['id']} (default sampling; SDK has no temperature param)\n\n"
                f"- Candidates classified: {len(cand)}\n- Labels: {counts}\n"

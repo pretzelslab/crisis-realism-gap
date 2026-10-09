@@ -27,5 +27,11 @@ Decisions (2026-10-07)
 - Validation: src/spotcheck.py shows 20 random kept y's locally for agree/disagree; verdicts (no text) are saved to outputs/spotcheck/. Results pending.
 - Limit: the classifier is a model judgement, and a stricter filter lowers recall; the baseline now skews to clearer help-seeking messages.
 
+### Baseline A expansion: shards 2-6 (2026-10-08)
+- The 66-item baseline was short of 200; spot-check agreed 11/11 (n=11, 100%). Shards 2-6 of 14 (same revision) downloaded to data/raw/wildchat/; same English + keyword prefilter, deduped across shards (shards 0-1 candidates unchanged: 397). Now 7 of 14 shards (~half the corpus).
+- Haiku classified only the 2,221 new candidates (labels cached in data/processed/wildchat_labels.parquet). Totals: 2,618 candidates -> 2,343 n / 265 y / 10 unsure -> 210 y at >=0.8 -> seeded sample of 200.
+- Per shard (candidates / y / y>=0.8): 0: 188/44/35 · 1: 209/43/31 · 2: 313/32/23 · 3: 520/50/43 · 4: 598/33/25 · 5: 393/20/15 · 6: 397/43/38. Sampled 200 by shard: 34/30/22/41/21/14/38.
+- Spot-check is on the earlier 66-item set; the 134 additions are not yet spot-checked. Classifier cost this run $1.37.
+
 ## Baseline B: synthetic (placeholder)
 - data/synthetic/README.md. Not generated.
