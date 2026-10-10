@@ -227,3 +227,4 @@ outputs/
 *.duckdb
 .env.*
 !.env.example
+data/synthetic/*.partial.jsonl
