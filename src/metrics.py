@@ -120,6 +120,71 @@ def summary(run_dir, d, n_attempts, n_failed, scores, aucs, leak):
     (run_dir / "summary.md").write_text("\n".join(L), encoding="utf-8")
 
 
+def _strat_auc(x, y, wx, wy, edges):
+    """AUC within word-count strata, pooled with pair weights (n_x * n_y per stratum)."""
+    bx, by = np.digitize(wx, edges), np.digitize(wy, edges)
+    num = den = 0.0
+    for b in np.unique(np.r_[bx, by]):
+        xs, ys = x[bx == b], y[by == b]
+        if len(xs) and len(ys):
+            r = pd.Series(np.r_[xs, ys]).rank().to_numpy()[:len(xs)]
+            num += r.sum() - len(xs) * (len(xs) + 1) / 2  # U statistic for this stratum
+            den += len(xs) * len(ys)
+    return num / den
+
+
+def format_check(d, items, seed):
+    """Phase 1 format check: single- vs multi-turn crisis vs WildChat, raw and length-matched."""
+    import statsmodels.api as sm
+    meta = items.set_index("item_id")
+    sc = d.groupby(["model", "item_id"]).p_eval.mean().reset_index()
+    sc["words"] = sc.item_id.map(meta.text.str.split().str.len())
+    sc["turns"] = sc.item_id.map(meta.n_turns)
+    sc["cat"] = sc.item_id.map(meta.category)
+    sc["src"] = sc.item_id.map(meta.source)
+    sc["grp"] = np.select([sc.src == "wildchat_filtered", (sc.src == "crisis_benchmark") & (sc.cat != "no_crisis") & (sc.turns == 1),
+                           (sc.src == "crisis_benchmark") & (sc.cat != "no_crisis")], ["wildchat", "crisis_single", "crisis_multi"], "other")
+    sc = sc[sc.grp != "other"].dropna(subset=["p_eval"])
+    rng, rows, regs = np.random.default_rng(seed), [], []
+    wild_w = sc[(sc.model == "sonnet") & (sc.grp == "wildchat")].words
+    edges = np.quantile(np.log(wild_w), [.2, .4, .6, .8])  # WildChat length quintiles (log words)
+    lw = lambda w: np.log(w.to_numpy())
+    for model, m in sc.groupby("model"):
+        w = m[m.grp == "wildchat"]
+        for g in ["crisis_single", "crisis_multi"]:
+            c = m[m.grp == g]
+            cp, wp, cw, ww = c.p_eval.to_numpy(), w.p_eval.to_numpy(), lw(c.words), lw(w.words)
+            raw = auc_boot(cp, wp, rng)
+            idx = lambda n: rng.integers(0, n, n)
+            est = _strat_auc(cp, wp, cw, ww, edges)
+            boots = []
+            for _ in range(REPS):
+                i, j = idx(len(cp)), idx(len(wp))
+                boots.append(_strat_auc(cp[i], wp[j], cw[i], ww[j], edges))
+            lo, hi = np.percentile(boots, [2.5, 97.5])
+            rows.append({"model": model, "group": f"{g} (n={len(cp)}) vs wildchat (n={len(wp)})",
+                         "AUC raw": f"{raw[0]:.3f} [{raw[1]:.3f}, {raw[2]:.3f}]",
+                         "AUC length-matched": f"{est:.3f} [{lo:.3f}, {hi:.3f}]",
+                         "median words": f"{c.words.median():.0f} vs {w.words.median():.0f}"})
+        # fractional logit: P(eval) ~ group + log(words), robust SEs (items are independent units)
+        z = pd.DataFrame({"y": m.p_eval, "multi": (m.grp == "crisis_multi") * 1.0, "single": (m.grp == "crisis_single") * 1.0,
+                          "logw": np.log(m.words)})
+        fit = sm.GLM(z.y, sm.add_constant(z[["single", "multi", "logw"]]), family=sm.families.Binomial()).fit(cov_type="HC1")
+        naive = sm.GLM(z.y, sm.add_constant(z[["single", "multi"]]), family=sm.families.Binomial()).fit(cov_type="HC1")
+        for nm in ["single", "multi", "logw"]:
+            ci = fit.conf_int().loc[nm]
+            regs.append({"model": model, "term": nm, "log-odds (adj. for length)": f"{fit.params[nm]:+.2f} [{ci[0]:+.2f}, {ci[1]:+.2f}]",
+                         "p": f"{fit.pvalues[nm]:.3g}",
+                         "unadjusted": f"{naive.params[nm]:+.2f}" if nm in naive.params else "-"})
+    L = ["", "## Phase 1 format check (single- vs multi-turn crisis; from existing calls.jsonl, no new calls)", "",
+         "Crisis = the 163 non-control crisis items (75 single-turn, 88 multi-turn). Word count is of the full text the model saw. "
+         "Length-matched AUC = AUC within WildChat length quintiles (log words), pooled by pair count; CIs resample items "
+         f"({REPS} reps, bin edges fixed).", "", md(pd.DataFrame(rows)), "",
+         "Fractional-logit regression, P(eval) item score ~ group + log(words), WildChat is the reference, robust (HC1) SEs. "
+         "`unadjusted` = same model without log(words).", "", md(pd.DataFrame(regs)), ""]
+    return "\n".join(L)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("run_dir")
@@ -138,7 +203,9 @@ def main():
             f"item text: {len(hits)} ({len(cb)} CounselBench). "
             + ("**FLAG: do not commit calls.jsonl.**" if hits else "No verbatim item text found; calls.jsonl is still gitignored."))
     summary(run_dir, d, n_attempts, n_failed, scores, aucs, leak)
-    print(open(run_dir / "summary.md", encoding="utf-8").read())
+    with open(run_dir / "summary.md", "a", encoding="utf-8") as f:
+        f.write(format_check(d, items, cfg["seed"]))
+    print(open(run_dir / "summary.md", encoding="utf-8").read().split("## Phase 1 format check")[-1])
 
 
 if __name__ == "__main__":

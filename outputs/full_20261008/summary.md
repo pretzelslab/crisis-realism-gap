@@ -60,3 +60,35 @@ Finding: 0 genuine omissions. Every parsed call carried a non-empty reason. The 
 ## Item-text check
 
 calls.jsonl has no item-text column; it stores prompt/response hashes and the model's free-text `reason` (3875 non-empty, WildChat reasons blanked). Reasons sharing an 8-word run with item text: 0 (0 CounselBench). No verbatim item text found; calls.jsonl is still gitignored.
+
+## Phase 1 format check (single- vs multi-turn crisis; from existing calls.jsonl, no new calls)
+
+Crisis = the 163 non-control crisis items (75 single-turn, 88 multi-turn). Word count is of the full text the model saw. Length-matched AUC = AUC within WildChat length quintiles (log words), pooled by pair count; CIs resample items (1000 reps, bin edges fixed).
+
+| model | group | AUC raw | AUC length-matched | median words |
+|---|---|---|---|---|
+| gemini | crisis_single (n=75) vs wildchat (n=200) | 0.976 [0.956, 0.991] | 0.985 [0.968, 0.997] | 13 vs 31 |
+| gemini | crisis_multi (n=88) vs wildchat (n=200) | 0.902 [0.851, 0.945] | 0.900 [0.848, 0.943] | 80 vs 31 |
+| gpt | crisis_single (n=75) vs wildchat (n=200) | 0.945 [0.917, 0.969] | 0.981 [0.960, 0.995] | 13 vs 31 |
+| gpt | crisis_multi (n=88) vs wildchat (n=200) | 0.948 [0.926, 0.970] | 0.935 [0.899, 0.963] | 80 vs 31 |
+| opus | crisis_single (n=75) vs wildchat (n=200) | 0.997 [0.991, 1.000] | 0.993 [0.980, 1.000] | 13 vs 31 |
+| opus | crisis_multi (n=88) vs wildchat (n=200) | 0.939 [0.905, 0.971] | 0.960 [0.929, 0.982] | 80 vs 31 |
+| sonnet | crisis_single (n=75) vs wildchat (n=200) | 0.990 [0.980, 0.997] | 0.979 [0.956, 0.994] | 13 vs 31 |
+| sonnet | crisis_multi (n=88) vs wildchat (n=200) | 0.847 [0.792, 0.899] | 0.879 [0.827, 0.925] | 80 vs 31 |
+
+Fractional-logit regression, P(eval) item score ~ group + log(words), WildChat is the reference, robust (HC1) SEs. `unadjusted` = same model without log(words).
+
+| model | term | log-odds (adj. for length) | p | unadjusted |
+|---|---|---|---|---|
+| gemini | single | +3.22 [+2.86, +3.59] | 4.52e-67 | +3.03 |
+| gemini | multi | +2.14 [+1.83, +2.46] | 2.72e-40 | +2.27 |
+| gemini | logw | +0.17 [+0.02, +0.33] | 0.0257 | - |
+| gpt | single | +2.45 [+2.16, +2.74] | 4.12e-61 | +2.06 |
+| gpt | multi | +1.72 [+1.47, +1.96] | 3.98e-44 | +1.93 |
+| gpt | logw | +0.34 [+0.23, +0.46] | 2.43e-09 | - |
+| opus | single | +2.12 [+1.92, +2.31] | 1.92e-100 | +2.10 |
+| opus | multi | +1.77 [+1.58, +1.96] | 1.36e-71 | +1.78 |
+| opus | logw | +0.01 [-0.09, +0.11] | 0.797 | - |
+| sonnet | single | +1.62 [+1.42, +1.83] | 1.32e-54 | +1.63 |
+| sonnet | multi | +1.19 [+1.00, +1.37] | 1.07e-34 | +1.18 |
+| sonnet | logw | -0.01 [-0.12, +0.10] | 0.88 | - |
