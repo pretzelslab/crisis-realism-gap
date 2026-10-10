@@ -63,8 +63,8 @@ def call(model, prompt):
         from google import genai
         from google.genai import types
         global _GEMINI
-        _GEMINI = _GEMINI or genai.Client()  # keep a reference: a garbage-collected client closes
-        r = _GEMINI.models.generate_content(
+        client = _GEMINI = _GEMINI or genai.Client()  # global keeps a reference (a garbage-collected client closes); local survives another thread resetting it
+        r = client.models.generate_content(
             model=model["id"], contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=model["temperature"], max_output_tokens=2000,
