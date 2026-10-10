@@ -1,0 +1,18 @@
+{
+ "source": "Baseline A WildChat (200 items), Haiku topic labels",
+ "labeller": "claude-haiku-4-5-20251001",
+ "counts": {
+  "relationships_dating": 48,
+  "wellbeing_habits": 36,
+  "legal_housing_money": 25,
+  "family_parenting": 20,
+  "career_work": 18,
+  "health_body": 16,
+  "education_study": 13,
+  "food_fitness_lifestyle": 11,
+  "creative_personal": 7,
+  "tech_help": 4,
+  "other": 1,
+  "travel_leisure": 1
+ }
+}
