@@ -21,6 +21,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-id")
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--cost-stop", type=float, default=COST_STOP)
+    ap.add_argument("--items", default="data/synthetic/baseline_b.jsonl")
+    ap.add_argument("--variant", help="keep only items whose `variant` field equals this (e.g. noask)")
     args = ap.parse_args()
     load_dotenv(ROOT / ".env")
     cfg = load_config()
@@ -28,7 +31,9 @@ def main():
     out = ROOT / "outputs" / run_id
     out.mkdir(parents=True, exist_ok=True)
     path = out / "calls.jsonl"
-    items = pd.read_json(ROOT / "data/synthetic/baseline_b.jsonl", lines=True)
+    items = pd.read_json(ROOT / args.items, lines=True)
+    if args.variant:
+        items = items[items["variant"] == args.variant]
     if args.limit:
         items = items.head(args.limit)
     done, cost, n, nerr = set(), 0.0, 0, 0
@@ -54,7 +59,7 @@ def main():
             cost, n, nerr = cost + r["cost_usd"], n + 1, nerr + bool(r["error"])
             if n % 100 == 0:
                 print(f"{n} calls, ${cost:.2f}, errors {nerr}", flush=True)
-            if cost > COST_STOP or (n >= 50 and nerr / n > ERR_STOP):
+            if cost > args.cost_stop or (n >= 50 and nerr / n > ERR_STOP):
                 stop.set()
                 print(f"STOP: cost ${cost:.2f}, errors {nerr}/{n}", flush=True)
 
