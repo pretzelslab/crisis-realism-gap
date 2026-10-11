@@ -162,12 +162,12 @@ def main():
     NUDGE = {"sonnet": 0.0, "opus": 0.0, "gpt": 0.0, "gemini": -0.012}
     for m in MODELS:
         v = [mean[(mean.model == m) & (mean.grp == g)].mean_peval.iloc[0] for g in order]
-        ax.plot(x, v, color=COLOR[m], marker=MARK[m], lw=2, ms=7, mec="white", mew=0.8)
-        ax.text(x[-1] + 0.12, v[-1] + NUDGE[m], MODEL_LABEL[m], color=INK, va="center", fontsize=8.5)
+        ax.plot(x, v, color=COLOR[m], marker=MARK[m], ls="none", ms=8, mec="white", mew=0.8)
     ax.set_xticks(x)
     ax.set_xticklabels([X3[g] + chr(10) + f"n = {n[g]}" for g in order], fontsize=8.5)
     ax.set_ylim(0, 0.8)
-    ax.set_xlim(-0.4, len(order) - 1 + 1.3)
+    ax.set_xlim(-0.5, len(order) - 0.5)
+    ax.legend(handles=handles, loc="upper right", frameon=False, fontsize=9)
     ax.set_ylabel("Mean P(eval)")
     ax.grid(axis="y", color=GRID, lw=0.7)
     ax.set_axisbelow(True)
