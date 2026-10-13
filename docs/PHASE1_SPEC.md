@@ -34,7 +34,7 @@ H0 is also useful: if AUC is near 0.5, benchmarks are realistic enough. Report a
 ## Outputs
 - `outputs/phase1/table_auc.csv` (model × source)
 - `fig_peval_by_source.png`, `fig_auc_vs_surface_baseline.png`, `fig_rewrite_delta.png`
-- `phase1_memo.md`: a 1-page finding for GCP and LinkedIn
+- `phase1_memo.md`: a 1-page finding for GCP and LinkedIn (not in repo; findings are in README + docs/phase1_appendix.md)
 
 ## Success criteria
 - AUC with CI reported for ≥ 3 models × 2 benchmarks
