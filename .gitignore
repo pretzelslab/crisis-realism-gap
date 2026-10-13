@@ -228,3 +228,6 @@ outputs/
 .env.*
 !.env.example
 data/synthetic/*.partial.jsonl
+
+# Local assistant instructions (kept out of the public repo)
+CLAUDE.md
