@@ -483,7 +483,7 @@ Message:
 | baselineC_20261010_144416 | 10-10 | 7c2c298 | 180 | 0.18 | Baseline C generation, 163 items (17 rejected drafts regenerated) |
 | baselineC_peval_20261010 | 10-10 | 7c2c298 | 1,956 | 1.83 | Baseline C P(eval): 163 items x 3 x 4 |
 
-Recorded costs sum to about $15.5; $12.8 of that is the four P(eval) runs behind the AUC tables (full_20261008, baselineB_peval, baselineB_noask_peval, baselineC_peval). Three rows have no recorded cost (small Haiku runs: the Baseline B smoke runs, the superseded Baseline B attempt, and the WildChat crisis-level label of the 143 Baseline A items). The Phase 1 memo figures (commits 12cef70 and 04d05d4) and this appendix reuse saved results and made no model calls.
+Recorded costs sum to about $15.5; $12.8 of that is the four P(eval) runs behind the AUC tables (full_20261008, baselineB_peval, baselineB_noask_peval, baselineC_peval). Three rows have no recorded cost (small Haiku runs: the Baseline B smoke runs, the superseded Baseline B attempt, and the WildChat crisis-level label of the 143 Baseline A items). The figures in the README and this appendix (commits 12cef70 and 04d05d4) reuse saved results and made no model calls.
 
 Notes:
 - Run names with only a date (for example baselineB_peval_20261010) were resumable and wrote to one directory; the date is the day of the last write.
