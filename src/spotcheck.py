@@ -1,5 +1,8 @@
 """Local spot-check CLI: show 20 random classifier-'y' WildChat messages with the model's reason;
-you answer agree/disagree. Run: `uv run python -m src.spotcheck [--n 20] [--seed N]`.
+you answer agree/disagree. Run: `uv run python -m src.spotcheck [--n 20] [--seed N] [--only-new]`.
+
+--only-new restricts the pool to the final 200-item baseline, minus the items from the original
+66-item set (shards 0-1). Those are the expansion items (shards 2-6) that were never spot-checked.
 
 Message text is shown only in your own terminal and is never written to the saved results
 (item_id, verdict, confidence only). Results: outputs/spotcheck/<timestamp>.csv + precision printed.
@@ -13,10 +16,15 @@ import pandas as pd
 from src.data_loaders import ROOT, load_config
 
 
+ORIGINAL_SHARDS = {"00000", "00001"}  # the earlier 66-item baseline came only from these shards
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=20)
     ap.add_argument("--seed", type=int, default=None, help="default: config seed")
+    ap.add_argument("--only-new", action="store_true",
+                    help="sample only baseline items from shards 2-6 (not in the original 66)")
     a = ap.parse_args()
     cfg = load_config()
     thr = cfg["baseline_classifier"]["min_confidence"]
@@ -25,6 +33,11 @@ def main():
     labels = pd.read_parquet(ROOT / "data/processed/wildchat_labels.parquet")
     ys = cand.merge(labels, on="item_id")
     ys = ys[(ys["label"] == "y") & (ys["confidence"] >= thr)]
+    if a.only_new:
+        base = pd.read_parquet(ROOT / "data/processed/wildchat_baseline.parquet")
+        new_ids = base.loc[~base["shard"].isin(ORIGINAL_SHARDS), "item_id"]
+        ys = ys[ys["item_id"].isin(new_ids)]
+        print(f"--only-new: pool of {len(ys)} baseline items from shards 2-6")
     sample = ys.sample(n=min(a.n, len(ys)), random_state=cfg["seed"] if a.seed is None else a.seed)
 
     results = []
