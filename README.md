@@ -53,9 +53,9 @@ Models: Sonnet (`claude-sonnet-5-5`), Opus (`claude-opus-5-5`), GPT (`gpt-6.1-so
 What the numbers show:
 
 - All four models rank benchmark items as clearly more test-like than the WildChat reference (AUC 0.91 to 0.97 for crisis items). Phase 1 is consistent with RQ1 for this reference set.
-- The synthetic crisis set B, written to look realistic, is also separated from WildChat (0.87 to 0.96), and removing the side question lowers this only a little. Style polish alone did not make crisis messages read as real to these models.
+- The synthetic crisis set B, written to look realistic, is also separated from WildChat (0.87 to 0.96), and removing the side question lowers this only a little. Style polish alone did not make crisis messages read as real to these models (but see the WildChat caveat below).
 - The synthetic non-crisis set C is much harder to tell from WildChat than B is: Gemini is at chance (0.50), GPT is close (0.58), Opus is modest (0.67), and Sonnet rates C as *more* real-user-like than WildChat (0.35). B-vs-C is high (0.87 to 0.95). So being synthetic does not by itself raise P(eval); content that discloses a crisis appears to matter more.
-- Benchmark crisis items are only modestly more test-like than the benchmark's own `no_crisis` controls (0.67 to 0.72), and the controls are themselves well separated from WildChat. Benchmark style, not only crisis content, contributes.
+- Benchmark crisis items are only modestly more test-like than the benchmark's own `no_crisis` controls (0.67 to 0.72), and the controls are themselves well separated from WildChat. Benchmark style, not only crisis content, may contribute.
 
 Caveats that bear on how far to read this:
 
@@ -71,7 +71,7 @@ Caveats that bear on how far to read this:
 - Python 3.12 and [uv](https://docs.astral.sh/uv/).
 - API keys for Anthropic, OpenAI and Google.
 - Disk space for 7 WildChat parquet shards (14 if you also run the optional crisis-level check).
-- **Cost: about $15.50 if you run everything from scratch.** Recorded costs for the runs behind the published numbers sum to about $15.5, of which about $12.8 is the four P(eval) runs behind the AUC tables and the rest is Haiku labelling and generation. Prices in `config.yaml` are from third-party trackers and are unverified, so check them before you start. `config.yaml` sets a $25 cost cap; stop and re-check before any run you estimate above it. `run_baseline_b` aborts a single run past $5 by default (`--cost-stop`).
+- **Cost: at least ~$15.50 if you run everything from scratch.** Recorded costs for the runs behind the published numbers sum to about $15.5, of which about $12.8 is the four P(eval) runs behind the AUC tables and the rest is Haiku labelling and generation. Prices in `config.yaml` are from third-party trackers and are unverified, so check them before you start. `config.yaml` sets a $25 cost cap; stop and re-check before any run you estimate above it. `run_baseline_b` aborts a single run past $5 by default (`--cost-stop`).
 
 ### Model versions
 
@@ -85,7 +85,7 @@ Pinned in [`config.yaml`](config.yaml):
 | Scored model | OpenAI | `gpt-6.1-sol` (reasoning effort low) |
 | Labelling and synthetic-text generation | Anthropic | `claude-haiku-4-5-20251001` |
 
-`gpt-6.1-sol` is an alias with no dated snapshot; the returned `model` field is logged on every call. Seed: `20261007`. Because the hosted models sample non-deterministically, a re-run will not reproduce the published numbers exactly. Expect the same picture with AUCs that differ by small amounts.
+`gpt-6.1-sol` is an alias with no dated snapshot; the returned `model` field is logged on every call. Seed: `20261007`. Because the hosted models sample non-deterministically, a re-run will not reproduce the published numbers exactly. Re-run results have not been tested; differences from the published AUCs are expected.
 
 ### 1. Install and configure
 

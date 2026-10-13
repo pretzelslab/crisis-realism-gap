@@ -1,6 +1,6 @@
 # Phase 1 appendix
 
-Supporting detail for the Phase 1 memo. Everything here is computed from files already on disk; no model calls were made to produce it.
+Supporting detail for the Phase 1 results in the README. Everything here is computed from files already on disk; no model calls were made to produce it.
 
 ## Terms used
 
@@ -465,25 +465,25 @@ Message:
 
 | Run name | Date | Commit | Calls | Cost (USD) | Purpose |
 |---|---|---|---|---|---|
-| smoke_20261007_193845, _194117, _194528, _194659 | 10-07 | 2b4a10f | 206 attempts (4 runs) | 0.20 | P(eval) smoke tests, early client and parameter fixes |
-| smoke_20261008_192412, _193801 | 10-08 | 31fd15e | 120 | 0.17 | Two-model smoke after the 15-word reason cap |
-| baselineA_20261008_171038 | 10-08 | f6932ac | 397 | 0.22 | Haiku label of first WildChat candidates |
-| baselineA_20261008_175025 | 10-08 | 00eb3aa | 2,221 | 1.37 | Haiku label of WildChat shards 2 to 6, baseline set to 200 |
-| full_20261008 | 10-08 | 7f428f9 | 6,276 of 6,333 (57 Gemini connection errors, all retried) | 7.14 | Phase 1 P(eval): 523 items x 3 samples x 4 models |
-| baselineB_smoke_20261009_205022, _205107, _205211 | 10-09 | f9a5cd4 | 33 | not recorded | Baseline B generator smoke runs |
-| baselineB_20261009_205252 | 10-09 | f9a5cd4 | 109 | not recorded | Earlier Baseline B generation attempt, superseded by the next run |
-| baselineB_20261009_205702 | 10-09 | f9a5cd4 | 225 | 0.23 | Baseline B generation, 163 items (62 rejected drafts regenerated) |
-| baselineB_peval_smoke | 10-10 | 09544c9 | 36 | 0.04 | Baseline B P(eval) smoke test |
-| baselineB_peval_20261010 | 10-10 | 09544c9 | 1,956 of 2,036 (80 failed, all retried) | 2.78 | Baseline B P(eval): 163 items x 3 x 4 |
-| wildchat_crisis_label_20261010_111415 | 10-10 | 8ce88d0 | 143 | not recorded | Haiku crisis-level label of WildChat Baseline A items |
-| wildchat_crisis_new_20261010_122212 | 10-10 | c8b8a4b | 39 | 0.03 | Haiku crisis-level label of keyword candidates from shards 7 to 13 (2 of 39 crisis-level) |
-| baselineB_noask_20261010_141418 | 10-10 | 4be19e8 | 87 | 0.10 | Regenerate the 70 side-question items without the side question |
-| baselineB_noask_peval_20261010 | 10-10 | 4be19e8 | 840 | 1.07 | P(eval) on the 70 regenerated items: 70 x 3 x 4 |
-| wildchat_topics_20261010_144007 | 10-10 | d6bd62a | 200 | 0.10 | Haiku topic label of WildChat, gives the Baseline C topic mix |
-| baselineC_20261010_144416 | 10-10 | d6bd62a | 180 | 0.18 | Baseline C generation, 163 items (17 rejected drafts regenerated) |
-| baselineC_peval_20261010 | 10-10 | d6bd62a | 1,956 | 1.83 | Baseline C P(eval): 163 items x 3 x 4 |
+| smoke_20261007_193845, _194117, _194528, _194659 | 10-07 | 99ffa4d | 206 attempts (4 runs) | 0.20 | P(eval) smoke tests, early client and parameter fixes |
+| smoke_20261008_192412, _193801 | 10-08 | a7646ef | 120 | 0.17 | Two-model smoke after the 15-word reason cap |
+| baselineA_20261008_171038 | 10-08 | b7c4f31 | 397 | 0.22 | Haiku label of first WildChat candidates |
+| baselineA_20261008_175025 | 10-08 | cad2ad7 | 2,221 | 1.37 | Haiku label of WildChat shards 2 to 6, baseline set to 200 |
+| full_20261008 | 10-08 | 458ee6a | 6,276 of 6,333 (57 Gemini connection errors, all retried) | 7.14 | Phase 1 P(eval): 523 items x 3 samples x 4 models |
+| baselineB_smoke_20261009_205022, _205107, _205211 | 10-09 | 0f00ea7 | 33 | not recorded | Baseline B generator smoke runs |
+| baselineB_20261009_205252 | 10-09 | 0f00ea7 | 109 | not recorded | Earlier Baseline B generation attempt, superseded by the next run |
+| baselineB_20261009_205702 | 10-09 | 0f00ea7 | 225 | 0.23 | Baseline B generation, 163 items (62 rejected drafts regenerated) |
+| baselineB_peval_smoke | 10-10 | 89144f9 | 36 | 0.04 | Baseline B P(eval) smoke test |
+| baselineB_peval_20261010 | 10-10 | 89144f9 | 1,956 of 2,036 (80 failed, all retried) | 2.78 | Baseline B P(eval): 163 items x 3 x 4 |
+| wildchat_crisis_label_20261010_111415 | 10-10 | 6b16a97 | 143 | not recorded | Haiku crisis-level label of WildChat Baseline A items |
+| wildchat_crisis_new_20261010_122212 | 10-10 | 985e5a9 | 39 | 0.03 | Haiku crisis-level label of keyword candidates from shards 7 to 13 (2 of 39 crisis-level) |
+| baselineB_noask_20261010_141418 | 10-10 | 0cc3651 | 87 | 0.10 | Regenerate the 70 side-question items without the side question |
+| baselineB_noask_peval_20261010 | 10-10 | 0cc3651 | 840 | 1.07 | P(eval) on the 70 regenerated items: 70 x 3 x 4 |
+| wildchat_topics_20261010_144007 | 10-10 | 7c2c298 | 200 | 0.10 | Haiku topic label of WildChat, gives the Baseline C topic mix |
+| baselineC_20261010_144416 | 10-10 | 7c2c298 | 180 | 0.18 | Baseline C generation, 163 items (17 rejected drafts regenerated) |
+| baselineC_peval_20261010 | 10-10 | 7c2c298 | 1,956 | 1.83 | Baseline C P(eval): 163 items x 3 x 4 |
 
-Recorded costs sum to about $15.5; $12.8 of that is the four P(eval) runs behind the AUC tables (full_20261008, baselineB_peval, baselineB_noask_peval, baselineC_peval). Three rows have no recorded cost (small Haiku runs: the Baseline B smoke runs, the superseded Baseline B attempt, and the WildChat crisis-level label of the 143 Baseline A items). The Phase 1 memo figures (commits 699b3c2 and 48c075c) and this appendix reuse saved results and made no model calls.
+Recorded costs sum to about $15.5; $12.8 of that is the four P(eval) runs behind the AUC tables (full_20261008, baselineB_peval, baselineB_noask_peval, baselineC_peval). Three rows have no recorded cost (small Haiku runs: the Baseline B smoke runs, the superseded Baseline B attempt, and the WildChat crisis-level label of the 143 Baseline A items). The Phase 1 memo figures (commits 12cef70 and 04d05d4) and this appendix reuse saved results and made no model calls.
 
 Notes:
 - Run names with only a date (for example baselineB_peval_20261010) were resumable and wrote to one directory; the date is the day of the last write.
