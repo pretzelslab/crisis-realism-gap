@@ -31,7 +31,7 @@ Decisions (2026-10-07)
 - The 66-item baseline was short of 200; spot-check agreed 11/11 (n=11, 100%). Shards 2-6 of 14 (same revision) downloaded to data/raw/wildchat/; same English + keyword prefilter, deduped across shards (shards 0-1 candidates unchanged: 397). Now 7 of 14 shards (~half the corpus).
 - Haiku classified only the 2,221 new candidates (labels cached in data/processed/wildchat_labels.parquet). Totals: 2,618 candidates -> 2,343 n / 265 y / 10 unsure -> 210 y at >=0.8 -> seeded sample of 200.
 - Per shard (candidates / y / y>=0.8): 0: 188/44/35 / 1: 209/43/31 / 2: 313/32/23 / 3: 520/50/43 / 4: 598/33/25 / 5: 393/20/15 / 6: 397/43/38. Sampled 200 by shard: 34/30/22/41/21/14/38.
-- Spot-check coverage: the only saved verdicts (outputs/spotcheck/20261008_174647.csv, n=11) are all from the earlier 66-item set; the 134 additions are not yet spot-checked (confirmed 2026-10-12). Classifier cost this run $1.37.
+- Spot-check coverage: the only saved verdicts (outputs/spotcheck/20261008_174647.csv, n=11) are all from the earlier 66-item set; the 136 additions (shards 2-6) are not yet spot-checked (confirmed 2026-10-12). Only 64 of the original 66 were resampled into the 200 (the seeded sample of 210 dropped 2), so the additions are 136, not 134. `src.spotcheck --only-new` samples from these 136. Classifier cost this run $1.37.
 
 ## Baselines B and C: synthetic (added 2026-10-09 to 2026-10-10)
 - Baseline B: 163 synthetic single-turn crisis messages written by claude-haiku-4-5-20251001 per docs/baseline_b_guidelines.md (v2), in data/synthetic/baseline_b.jsonl. 70 items carry an unrelated everyday side question. Drafts are screened for banned phrases, method/dose/means detail and near-duplicates (src/generate_baseline_b.py).
