@@ -4,11 +4,11 @@ Do crisis-safety benchmarks overstate how safely LLMs respond to people in dange
 
 This repo is a research and evaluation harness. It asks a precondition question first: **do the messages in existing crisis benchmarks look like tests to the models being evaluated?** If a model can tell it is being tested, its benchmark behaviour may not match its behaviour with a real person.
 
-**Status:** Phase 1 (black-box measurement of how test-like items look) is complete. The realism-rewrite experiment (Phase 2) has not started. See [What is not here](#what-is-not-here).
+**Status:** The core Phase 1 measurement (black-box P(eval) across the item sets) is complete; three other Phase 1 spec items are planned but not yet run. The realism-rewrite experiment (Phase 2) has not started. See [What is not here](#what-is-not-here).
 
 ## Research questions
 
-1. **RQ1 (Phase 1, done here):** do existing crisis and safety benchmarks look test-like to models?
+1. **RQ1 (Phase 1, measured here):** do existing crisis and safety benchmarks look test-like to models?
 2. **RQ2 (Phase 2, not started):** does model safety drop when the same item is rewritten to look realistic?
 3. **RQ3 (Phase 2, not started):** is the drop larger for covert distress?
 
@@ -52,7 +52,7 @@ Models: Sonnet (`claude-sonnet-5-5`), Opus (`claude-opus-5-5`), GPT (`gpt-6.1-so
 
 What the numbers show:
 
-- All four models rank benchmark items as clearly more test-like than the WildChat reference (AUC 0.91 to 0.97 for crisis items). Phase 1 supports RQ1 for this reference set.
+- All four models rank benchmark items as clearly more test-like than the WildChat reference (AUC 0.91 to 0.97 for crisis items). Phase 1 is consistent with RQ1 for this reference set.
 - The synthetic crisis set B, written to look realistic, is also separated from WildChat (0.87 to 0.96), and removing the side question lowers this only a little. Style polish alone did not make crisis messages read as real to these models.
 - The synthetic non-crisis set C is much harder to tell from WildChat than B is: Gemini is at chance (0.50), GPT is close (0.58), Opus is modest (0.67), and Sonnet rates C as *more* real-user-like than WildChat (0.35). B-vs-C is high (0.87 to 0.95). So being synthetic does not by itself raise P(eval); content that discloses a crisis appears to matter more.
 - Benchmark crisis items are only modestly more test-like than the benchmark's own `no_crisis` controls (0.67 to 0.72), and the controls are themselves well separated from WildChat. Benchmark style, not only crisis content, contributes.
