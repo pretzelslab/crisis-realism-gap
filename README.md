@@ -100,19 +100,78 @@ cp .env.example .env      # then fill in ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOG
 
 **`data/raw/` is not in this repo.** The three third-party datasets are under their own licences (two are non-commercial, one is no-derivatives) and are not redistributed, so you download them yourself at the revisions listed in [`data/SOURCES.md`](data/SOURCES.md). Everything under `data/raw/` and `data/processed/` is gitignored.
 
-Download the three sources to the paths below, using the dataset URLs and revision hashes in `data/SOURCES.md`. For example, with the Hugging Face CLI:
+Run these from the repo root. They use the pinned revisions in `data/SOURCES.md`. `uvx` fetches the Hugging Face CLI on demand (the `hf` command in `huggingface_hub`), so nothing extra is added to the project. Hugging Face prints an "unauthenticated requests" warning; it is harmless for these public datasets.
+
+**Between Help and Harm crisis benchmark** (small). The repo nests its files, so download the four files the loader needs, then flatten and rename them:
 
 ```bash
-uvx --from "huggingface_hub[cli]" hf download <dataset-id> --repo-type dataset --revision <revision> --local-dir <target>
+uvx --from huggingface_hub hf download arnaiztech/llms-mental-health-crisis-benchmark examples/validation.parquet examples/test.parquet annotations/human_merged/validation.parquet annotations/llm_merged/test/gpt-4o-mini.parquet --repo-type dataset --revision 7f0a0d31bb8309b0e52e670d535d954d6fa7a386 --local-dir data/raw/crisis_benchmark
 ```
 
-| Dataset | Target path |
-|---|---|
-| Between Help and Harm crisis benchmark | `data/raw/crisis_benchmark/` (needs `validation.parquet`, `test.parquet`, and `annotations/human_merged_validation.parquet`, `annotations/llm_merged_test_gpt-4o-mini.parquet`) |
-| CounselBench-Adv | `data/raw/counselbench_adv/counselbench_adv.csv` |
-| WildChat-1M, shards 0 to 6 of 14 | `data/raw/wildchat/train-0000N-of-00014.parquet` |
+Then flatten (bash):
 
-Optional, only for the crisis-level check on WildChat: shards 7 to 13 go in `data/raw/wildchat_dl/data/`.
+```bash
+cd data/raw/crisis_benchmark
+mv examples/validation.parquet examples/test.parquet .
+mv annotations/human_merged/validation.parquet annotations/human_merged_validation.parquet
+mv annotations/llm_merged/test/gpt-4o-mini.parquet annotations/llm_merged_test_gpt-4o-mini.parquet
+rm -rf examples annotations/human_merged annotations/llm_merged
+cd ../../..
+```
+
+or (PowerShell):
+
+```powershell
+Set-Location data\raw\crisis_benchmark
+Move-Item examples\*.parquet .
+Move-Item annotations\human_merged\validation.parquet annotations\human_merged_validation.parquet
+Move-Item annotations\llm_merged\test\gpt-4o-mini.parquet annotations\llm_merged_test_gpt-4o-mini.parquet
+Remove-Item -Recurse examples, annotations\human_merged, annotations\llm_merged
+Set-Location ..\..\..
+```
+
+Result: `validation.parquet`, `test.parquet`, `annotations/human_merged_validation.parquet` and `annotations/llm_merged_test_gpt-4o-mini.parquet` under `data/raw/crisis_benchmark/`. (The `.cache/` folder that the CLI leaves in the target directory is harmless and gitignored along with `data/raw/`.)
+
+**CounselBench-Adv** (one file, no nesting):
+
+```bash
+uvx --from huggingface_hub hf download izi-ano/CounselBench-Adv counselbench_adv.csv --repo-type dataset --revision 57a2e2d5b709208197bbf8ff55124d4844067da3 --local-dir data/raw/counselbench_adv
+```
+
+**WildChat-1M, shards 0 to 6 of 14** (about 1.5 GB in total). The repo keeps shards under `data/`, so the CLI creates `data/raw/wildchat/data/`, and the build script expects the files directly in `data/raw/wildchat/`:
+
+```bash
+uvx --from huggingface_hub hf download allenai/WildChat-1M --repo-type dataset --revision 7d6490e462285cf85d91eabea0f9a954fbddcd1f --include "data/train-0000[0-6]-of-00014.parquet" --local-dir data/raw/wildchat
+```
+
+Then move the shards up one level (bash):
+
+```bash
+mv data/raw/wildchat/data/*.parquet data/raw/wildchat/ && rmdir data/raw/wildchat/data
+```
+
+or (PowerShell):
+
+```powershell
+Move-Item data\raw\wildchat\data\*.parquet data\raw\wildchat\
+Remove-Item data\raw\wildchat\data
+```
+
+**Optional: WildChat shards 7 to 13** (about 1.9 GB), only for the crisis-level check. No move is needed: `build_wildchat_crisis_candidates.py` reads `data/raw/wildchat_dl/data/`. Note the repeated `--include` (one pattern per flag):
+
+```bash
+uvx --from huggingface_hub hf download allenai/WildChat-1M --repo-type dataset --revision 7d6490e462285cf85d91eabea0f9a954fbddcd1f --include "data/train-0000[7-9]-of-00014.parquet" --include "data/train-0001[0-3]-of-00014.parquet" --local-dir data/raw/wildchat_dl
+```
+
+Expected result under `data/raw/`:
+
+```
+crisis_benchmark/{validation,test}.parquet
+crisis_benchmark/annotations/{human_merged_validation,llm_merged_test_gpt-4o-mini}.parquet
+counselbench_adv/counselbench_adv.csv
+wildchat/train-00000-of-00014.parquet ... train-00006-of-00014.parquet
+wildchat_dl/data/train-00007-of-00014.parquet ... train-00013-of-00014.parquet   (optional)
+```
 
 WildChat contains real users' text. Keep it local. The scripts print aggregate counts only, and nothing in the committed outputs quotes it.
 

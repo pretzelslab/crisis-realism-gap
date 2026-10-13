@@ -7,12 +7,12 @@
 
 Notes
 - Crisis benchmark: test-split labels are machine labels (gpt-4o-mini, majority of 3 runs); validation labels are human majority vote. Items are multi-turn user-side text only.
-- CounselBench-Adv is NoDerivatives: the Phase 1 realism-rewrite pilot creates adapted material. Rewrites must stay local and unpublished, or get the authors' permission first.
-- Deployment-style baseline: not chosen yet.
+- CounselBench-Adv is NoDerivatives: the planned realism-rewrite pilot (not yet run) would create adapted material. Rewrites must stay local and unpublished, or get the authors' permission first.
+- Deployment-style baseline: Baseline A, filtered WildChat-1M (below). Synthetic Baselines B and C serve as sensitivity checks (below).
 
 Decisions (2026-10-07)
 - Crisis sample: drop duplicate texts and unresolved labels; up to 30 per crisis category (all of violent_thoughts, risk_taking_behaviors) + 40 no_crisis control = 203 items. Main text = all user turns; `text_first_turn` is a sensitivity variant.
-- CounselBench-Adv: P(eval) only, labelled "authored counselling questions"; excluded from the rewrite pilot (ND licence).
+- CounselBench-Adv: P(eval) only, labelled "authored counselling questions"; excluded from the planned rewrite pilot (ND licence).
 
 ## Baseline A: filtered WildChat-1M (added 2026-10-07)
 - URL: https://huggingface.co/datasets/allenai/WildChat-1M, revision 7d6490e462285cf85d91eabea0f9a954fbddcd1f, licence ODC-BY 1.0 (not gated). Shards 0 and 1 of 14 downloaded to data/raw/wildchat/ (gitignored).
@@ -24,14 +24,17 @@ Decisions (2026-10-07)
 - Manual spot-check of the keyword-filtered sample put precision at ~55-65%, so the 200-item heuristic sample is superseded (kept locally as data/processed/wildchat_baseline_heuristic.parquet).
 - Method (src/classify_baseline.py): all 397 deduped keyword candidates (data/processed/wildchat_candidates.parquet) are labelled y/n/unsure by claude-haiku-4-5-20251001 with a two-question rubric: (1) a real person talking about their own or a close person's life? (2) seeking help/comfort/advice about it? Both yes = y; stories, roleplay, tasks, general knowledge and bot-testing = n. Output is JSON {label, confidence, reason <=15 words}. Default sampling (the SDK exposes no temperature parameter); prompt/response hashes logged in outputs/<run_id>/calls.jsonl.
 - Keep y with confidence >= 0.8, then sample up to 200 with the config seed (all if fewer). Result: 397 -> 305 n / 87 y / 5 unsure -> 66 y at >=0.8 -> baseline of 66 (fewer than the 200 target, so all kept).
-- Validation: src/spotcheck.py shows 20 random kept y's locally for agree/disagree; verdicts (no text) are saved to outputs/spotcheck/. Results pending.
+- Validation: src/spotcheck.py shows 20 random kept y's locally for agree/disagree; verdicts (no text) are saved to outputs/spotcheck/. Result: 11 of 11 reviewed items agreed (n=11, 100%; fewer than the 20 the tool offers). See the expansion section below.
 - Limit: the classifier is a model judgement, and a stricter filter lowers recall; the baseline now skews to clearer help-seeking messages.
 
 ### Baseline A expansion: shards 2-6 (2026-10-08)
 - The 66-item baseline was short of 200; spot-check agreed 11/11 (n=11, 100%). Shards 2-6 of 14 (same revision) downloaded to data/raw/wildchat/; same English + keyword prefilter, deduped across shards (shards 0-1 candidates unchanged: 397). Now 7 of 14 shards (~half the corpus).
 - Haiku classified only the 2,221 new candidates (labels cached in data/processed/wildchat_labels.parquet). Totals: 2,618 candidates -> 2,343 n / 265 y / 10 unsure -> 210 y at >=0.8 -> seeded sample of 200.
-- Per shard (candidates / y / y>=0.8): 0: 188/44/35 · 1: 209/43/31 · 2: 313/32/23 · 3: 520/50/43 · 4: 598/33/25 · 5: 393/20/15 · 6: 397/43/38. Sampled 200 by shard: 34/30/22/41/21/14/38.
+- Per shard (candidates / y / y>=0.8): 0: 188/44/35 / 1: 209/43/31 / 2: 313/32/23 / 3: 520/50/43 / 4: 598/33/25 / 5: 393/20/15 / 6: 397/43/38. Sampled 200 by shard: 34/30/22/41/21/14/38.
 - Spot-check is on the earlier 66-item set; the 134 additions are not yet spot-checked. Classifier cost this run $1.37.
 
-## Baseline B: synthetic (placeholder)
-- data/synthetic/README.md. Not generated.
+## Baselines B and C: synthetic (added 2026-10-09 to 2026-10-10)
+- Baseline B: 163 synthetic single-turn crisis messages written by claude-haiku-4-5-20251001 per docs/baseline_b_guidelines.md (v2), in data/synthetic/baseline_b.jsonl. 70 items carry an unrelated everyday side question. Drafts are screened for banned phrases, method/dose/means detail and near-duplicates (src/generate_baseline_b.py).
+- B without the side question: the 70 side-question items regenerated without it, plus the 93 unchanged B items, in data/synthetic/baseline_b_noask.jsonl (src/generate_baseline_b_noask.py).
+- Baseline C: 163 synthetic non-crisis single-turn messages written by the same Haiku model, topic mix matched to Haiku topic labels of the 200 WildChat items (data/synthetic/baseline_c.jsonl, baseline_c_topic_mix.json; src/generate_baseline_c.py). Drafts with crisis content are rejected by a Haiku screen.
+- Limit: synthetic text may itself look test-like to a model, which is why Baseline A is the primary reference. Prompts are in docs/phase1_appendix.md (section B).
