@@ -323,7 +323,7 @@ def user_prompt(r):
 
 ### B5. WildChat filter and Baseline A label
 
-Step 1, keyword filter over WildChat-1M shards 2 to 6 (English, not flagged toxic or redacted, first user turn 30 to 1500 characters, first-person word and emotion word present, no task word). The filtered messages are then labelled by Haiku (step 2), and items labelled "y" with confidence of at least 0.8 are sampled (seed 20261007) down to 200.
+Step 1, keyword filter over WildChat-1M shards 0 to 6 (run in two stages: shards 0-1 first, then shards 2-6; English, not flagged toxic or redacted, first user turn 30 to 1500 characters, first-person word and emotion word present, no task word). The filtered messages are then labelled by Haiku (step 2), and items labelled "y" with confidence of at least 0.8 are sampled (seed 20261007) down to 200.
 
 Step 1, keyword lists and filter condition:
 
